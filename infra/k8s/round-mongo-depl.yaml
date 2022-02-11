@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: round-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: round-mongo
+  template:
+    metadata:
+      labels:
+        app: round-mongo
+    spec:
+      containers:
+        - name: round-mongo
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: round-mongo-srv
+spec:
+  selector:
+    app: round-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017

@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: joined-user-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: joined-user-mongo
+  template:
+    metadata:
+      labels:
+        app: joined-user-mongo
+    spec:
+      containers:
+        - name: joined-user-mongo
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: joined-user-mongo-srv
+spec:
+  selector:
+    app: joined-user-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017

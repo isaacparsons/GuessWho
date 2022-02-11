@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: joined-user-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: joined-user
+  template:
+    metadata:
+      labels:
+        app: joined-user
+    spec:
+      containers:
+        - name: joined-user
+          image: cygnetops/joined-user-95
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: joined-user-srv
+spec:
+  selector:
+    app: joined-user
+  ports:
+    - name: joined-user
+      protocol: TCP
+      port: 4008
+      targetPort: 4008

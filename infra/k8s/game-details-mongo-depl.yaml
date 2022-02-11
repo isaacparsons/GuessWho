@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-details-mongo-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-details-mongo
+  template:
+    metadata:
+      labels:
+        app: game-details-mongo
+    spec:
+      containers:
+        - name: game-details-mongo
+          image: mongo
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-details-mongo-srv
+spec:
+  selector:
+    app: game-details-mongo
+  ports:
+    - name: db
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
