@@ -7,7 +7,9 @@ import { Box, Button } from "@mui/material";
 const App = () => {
   const [host, setHost] = useState(false);
   const [game, setGame] = useState(null);
+  const [gameCode, setGameCode] = useState("");
   const [screen, setScreen] = useState("home");
+  const [displayName, setDisplayName] = useState("");
 
   useEffect(() => {
     if (game) {
@@ -15,7 +17,7 @@ const App = () => {
     }
   }, [game]);
 
-  const handleJoinPress = async (gameCode) => {
+  const handleJoinPress = async () => {
     try {
       var res = await axios.get(`http://posts.com/game/${gameCode}`);
       setGame(res.data);
@@ -36,9 +38,18 @@ const App = () => {
 
   const getScreen = (screen) => {
     if (screen === "home") {
-      return <HomeScreen onCreateGameClick={handleCreateGamePress} onJoinClick={handleJoinPress} />;
+      return (
+        <HomeScreen
+          gameCode={gameCode}
+          displayName={displayName}
+          setDisplayName={setDisplayName}
+          setGameCode={setGameCode}
+          onCreateGameClick={handleCreateGamePress}
+          onJoinClick={handleJoinPress}
+        />
+      );
     } else if (screen === "game") {
-      return <GameScreen host={host} game={game} />;
+      return <GameScreen host={host} game={game} displayName={displayName} />;
     }
   };
 

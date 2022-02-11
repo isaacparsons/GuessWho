@@ -45,13 +45,13 @@ app.post("/events", async (req, res) => {
   }
   if (type === "RoundCreated") {
     var round = data;
-    var gameDetails = await GameDetail.findOne({ "game.gameId": data.gameId });
+    var gameDetails = await GameDetail.findOne({ "game.gameCode": data.gameCode });
     var rounds = gameDetails.rounds;
     var joinedUsers = gameDetails.joinedUsers;
 
     gameDetails.rounds.push(round);
     await GameDetail.updateOne({ _id: gameDetails._id }, { $set: { rounds: gameDetails.rounds } });
-    var newGameDetails = await GameDetail.findOne({ "game.gameId": data.gameId });
+    var newGameDetails = await GameDetail.findOne({ "game.gameCode": data.gameCode });
     await axios.post("http://event-bus-srv:4005/events", {
       type: "GameDetailsUpdated",
       data: newGameDetails._doc,
@@ -77,7 +77,7 @@ app.post("/events", async (req, res) => {
   }
   if (type === "RoundUpdated") {
     var round = data;
-    var gameDetails = await GameDetail.findOne({ "game.gameId": round.gameId });
+    var gameDetails = await GameDetail.findOne({ "game.gameCode": round.gameCode });
     var newRounds = gameDetails.rounds.map((item) => {
       if (item._id === round._id) {
         item = round;
@@ -85,27 +85,35 @@ app.post("/events", async (req, res) => {
       return round;
     });
     gameDetails.rounds = newRounds;
-    await GameDetail.updateOne({ "game.gameId": round.gameId }, gameDetails);
-    var newGameDetails = await GameDetail.findOne({ "game.gameId": data.gameId });
+    await GameDetail.updateOne({ "game.gameCode": round.gameCode }, gameDetails);
+    var newGameDetails = await GameDetail.findOne({ "game.gameCode": data.gameCode });
     await axios.post("http://event-bus-srv:4005/events", {
       type: "GameDetailsUpdated",
       data: newGameDetails._doc,
     });
+    console.log(newGameDetails);
   }
   if (type === "UserLeft") {
     var gameDetails = await GameDetail.findOne({ "joinedUsers.socketId": data });
-    var joinedUsers = gameDetails.joinedUsers;
-    var newJoinedUsers = joinedUsers.filter((item) => {
-      if (item.socketId !== data) {
-        return item;
-      }
-    });
-    await GameDetail.updateOne({ _id: gameDetails._id }, { $set: { joinedUsers: newJoinedUsers } });
-    var newGameDetails = await GameDetail.findOne({ _id: gameDetails._id });
-    await axios.post("http://event-bus-srv:4005/events", {
-      type: "GameDetailsUpdated",
-      data: newGameDetails._doc,
-    });
+    if (gameDetails) {
+      var joinedUsers = gameDetails.joinedUsers;
+      var newJoinedUsers = joinedUsers.filter((item) => {
+        if (item.socketId !== data) {
+          return item;
+        }
+      });
+      await GameDetail.updateOne({ _id: gameDetails._id }, { $set: { joinedUsers: newJoinedUsers } });
+      var newGameDetails = await GameDetail.findOne({ _id: gameDetails._id });
+      await axios.post("http://event-bus-srv:4005/events", {
+        type: "GameDetailsUpdated",
+        data: newGameDetails._doc,
+      });
+    }
+  }
+
+  if (type === "GameEmpty") {
+    var gameCode = data;
+    await GameDetail.deleteOne({ "game.gameCode": gameCode });
   }
   res.send({});
 });

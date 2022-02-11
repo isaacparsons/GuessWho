@@ -6,8 +6,8 @@ const round = new Schema(
       type: String,
       required: true,
     },
-    gameId: {
-      type: SchemaTypes.ObjectId,
+    gameCode: {
+      type: String,
       required: true,
     },
     selectedUser: {

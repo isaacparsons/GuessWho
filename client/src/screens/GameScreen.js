@@ -14,14 +14,12 @@ import {
   Typography,
 } from "@mui/material";
 
-const GameScreen = ({ game, host }) => {
+const GameScreen = ({ game, host, displayName }) => {
   const [socket, setSocket] = useState(null);
   const [joinedUsers, setJoinedUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [rounds, setRounds] = useState([]);
   const [currentRound, setCurrentRound] = useState(null);
-  const [createRoundModal, setCreateRoundModal] = useState(false);
-  const [roundSelectionModal, setRoundSelectionModal] = useState(false);
 
   useEffect(() => {
     const newSocket = socketIOClient("http://posts.com/", {
@@ -36,7 +34,7 @@ const GameScreen = ({ game, host }) => {
 
   useEffect(() => {
     if (game && socket) {
-      socket.emit("join-game", { gameCode: game.gameCode, host: host });
+      socket.emit("join-game", { gameCode: game.gameCode, displayName: displayName, host: host });
     }
   }, [game, socket]);
 
@@ -60,60 +58,134 @@ const GameScreen = ({ game, host }) => {
     setCurrentRound(_round);
   }, [rounds]);
 
-  useEffect(() => {
-    if (currentRound) {
-      if (currentRound.selectedUser === user._id && !currentRound.started) {
-        setCreateRoundModal(true);
-      } else {
-        setCreateRoundModal(true);
-      }
-    }
-  }, [currentRound]);
-
-  useEffect(() => {
-    if (currentRound) {
-      if (currentRound.started && !currentRound.expired) {
-        setRoundSelectionModal(true);
-      } else {
-        setRoundSelectionModal(true);
-      }
-    }
-  }, [currentRound]);
-
   const startGame = () => {
     socket.emit("start-game", game);
   };
 
   const onSubmitRound = (round) => {
+    console.log(round);
     socket.emit("edit-round-prompt", round);
   };
 
   return (
     <Box style={{ padding: 10 }}>
-      {game ? <h1>{`Room Code: ${game.gameCode}`}</h1> : null}
-      {user ? <p>{`${user._id}`}</p> : null}
-      <Box className="form-group">{host ? <Button onClick={startGame}>startGame</Button> : null}</Box>
+      {game ? <Typography style={{ fontSize: 22 }}>{`Room Code: ${game.gameCode}`}</Typography> : null}
+      {user ? <Typography style={{ fontSize: 20 }}>{`User Name: ${user.displayName}`}</Typography> : null}
       <JoinedUsers joinedUsers={joinedUsers} />
-      <CreateRound
-        round={currentRound}
-        onSubmitRound={onSubmitRound}
-        createRoundModal={createRoundModal}
-        setCreateRoundModal={setCreateRoundModal}
-      />
-      <RoundAnswer
-        round={currentRound}
-        roundSelectionModal={roundSelectionModal}
-        setRoundSelectionModal={setRoundSelectionModal}
-      />
+      {host ? (
+        <Button style={{ borderRadius: 10, backgroundColor: "#58a36c", color: "white" }} onClick={startGame}>
+          startGame
+        </Button>
+      ) : null}
+      <Round round={currentRound} user={user} onSubmitRound={onSubmitRound} />
     </Box>
   );
 };
 export default GameScreen;
+const Round = ({ round, user, onSubmitRound }) => {
+  const [createRoundModal, setCreateRoundModal] = useState(false);
+  const [roundSelectionModal, setRoundSelectionModal] = useState(false);
+  const [prompt, setPrompt] = useState("");
+
+  useEffect(() => {
+    console.log(round);
+
+    if (round) {
+      if (round.started && !round.expired) {
+        setRoundSelectionModal(true);
+      } else {
+        setRoundSelectionModal(false);
+      }
+    }
+  }, [round]);
+
+  useEffect(() => {
+    if (round) {
+      if (round.selectedUser === user._id && !round.started) {
+        setCreateRoundModal(true);
+      } else {
+        setCreateRoundModal(false);
+      }
+    }
+  }, [round, user]);
+
+  const handleSubmitRound = () => {
+    console.log("test");
+    round.prompt = prompt;
+    onSubmitRound(round);
+    setCreateRoundModal(false);
+  };
+  if (round) {
+    var { roundNumber } = round;
+    if (createRoundModal) {
+      return (
+        <Modal
+          open={createRoundModal}
+          // onClose={() => setCreateRoundModal(false)}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        >
+          <Box
+            height={400}
+            width={400}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "white",
+              borderRadius: 10,
+              padding: 10,
+            }}
+          >
+            <Typography style={{ padding: 5, fontSize: 20 }}>{`Round ${roundNumber}`}</Typography>
+            <TextField
+              required
+              id="outlined-required"
+              label="Prompt"
+              value={prompt}
+              onChange={(event) => setPrompt(event.target.value)}
+            />
+            <Button onClick={handleSubmitRound}>Submit</Button>
+          </Box>
+        </Modal>
+      );
+    }
+    if (roundSelectionModal) {
+      return (
+        <Modal
+          open={roundSelectionModal}
+          // onClose={() => setRoundSelectionModal(false)}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+          style={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        >
+          <Box
+            height={400}
+            width={400}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              backgroundColor: "white",
+              borderRadius: 10,
+              padding: 10,
+            }}
+          >
+            <Typography style={{ padding: 5, fontSize: 20 }}>{`Round ${roundNumber}`}</Typography>
+
+            <Button>Submit</Button>
+          </Box>
+        </Modal>
+      );
+    }
+  }
+  return null;
+};
 
 const CreateRound = ({ round, onSubmitRound, createRoundModal, setCreateRoundModal }) => {
   const [prompt, setPrompt] = useState("");
 
   const handleSubmitRound = () => {
+    console.log("test");
     round.prompt = prompt;
     onSubmitRound(round);
     setCreateRoundModal(false);

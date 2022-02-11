@@ -6,6 +6,10 @@ const joinedUser = new Schema(
       type: String,
       required: true,
     },
+    displayName: {
+      type: String,
+      required: true,
+    },
     points: {
       type: Number,
       required: true,

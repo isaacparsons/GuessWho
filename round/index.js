@@ -17,7 +17,7 @@ app.post("/events", async (req, res) => {
   if (type === "StartGame") {
     var round = await new Round({
       roundNumber: 1,
-      gameId: data._id,
+      gameCode: data.gameCode,
       selectedUser: null,
       prompt: " ",
       correct_users: [],
@@ -46,6 +46,9 @@ app.post("/events", async (req, res) => {
       type: "RoundUpdated",
       data: newRound,
     });
+  }
+  if (type === "GameEmpty") {
+    await Round.deleteMany({ gameCode: gameCode });
   }
 
   res.send({});

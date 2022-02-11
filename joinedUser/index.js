@@ -22,8 +22,17 @@ app.post("/events", async (req, res) => {
     });
   }
   if (type === "UserLeft") {
+    var joinedUser = await JoinedUser.findOne({ socketId: data });
     await JoinedUser.deleteOne({ socketId: data });
+    var allUsersInGame = await JoinedUser.find({ gameCode: joinedUser.gameCode });
+    if (allUsersInGame.length === 0) {
+      await axios.post("http://event-bus-srv:4005/events", {
+        type: "GameEmpty",
+        data: gameCode,
+      });
+    }
   }
+
   res.send({});
 });
 

@@ -1,19 +1,67 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { Box, Button, TextField, Typography, Modal } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 
-const HomeScreen = ({ onCreateGameClick, onJoinClick }) => {
-  const [content, setContent] = useState("");
+const useStyles = makeStyles({
+  root: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  button: {
+    width: 400,
+    height: 100,
+    margin: 20,
+    borderRadius: 50,
+    backgroundColor: "#58a36c",
+    color: "white",
+  },
+  gameCodeContainer: {
+    display: "flex",
+    flexDirection: "row",
+    width: 150,
+  },
+  gameCodeTextContainer: {
+    height: 50,
+    lineHeight: 1.5,
+  },
+  joinGameContainer: {
+    display: "flex",
+    flexDirection: "column",
+  },
+});
+
+const HomeScreen = ({ gameCode, setGameCode, onCreateGameClick, onJoinGameClick, displayName, setDisplayName }) => {
+  const classes = useStyles();
+
   return (
-    <div className="container">
-      <button className="btn btn-primary" onClick={onCreateGameClick}>
+    <Box className={classes.root}>
+      <Box className={classes.gameCodeContainer}>
+        <Typography>Display Name: </Typography>
+        <TextField
+          className={classes.gameCodeTextContainer}
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+        />
+      </Box>
+      <Button className={classes.button} onClick={onCreateGameClick}>
         Create Game
-      </button>
-      <div>
-        <input value={content} onChange={(e) => setContent(e.target.value)} className="form-control" />
-        <button className="btn btn-primary" onClick={() => onJoinClick(content)}>
+      </Button>
+      <Box className={classes.joinGameContainer}>
+        <Button className={classes.button} onClick={onJoinGameClick}>
           Join Game
-        </button>
-      </div>
-    </div>
+        </Button>
+        <Box className={classes.gameCodeContainer}>
+          <Typography>Game Code: </Typography>
+          <TextField
+            className={classes.gameCodeTextContainer}
+            value={gameCode}
+            onChange={(e) => setGameCode(e.target.value)}
+          />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 export default HomeScreen;

@@ -28,7 +28,6 @@ class Socket {
       });
 
       socket.on("join-game", async (options) => {
-        console.log(socket.id);
         await axios.post("http://event-bus-srv:4005/events", {
           type: "JoinedUser",
           data: { ...options, socketId: socket.id },
@@ -43,6 +42,7 @@ class Socket {
       });
 
       socket.on("edit-round-prompt", async (round) => {
+        console.log(round);
         await axios.post("http://event-bus-srv:4005/events", {
           type: "RoundPromptUpdated",
           data: round,
@@ -50,8 +50,6 @@ class Socket {
       });
 
       socket.on("disconnect", async (err) => {
-        console.log("user disconnected");
-        console.log(socket.id);
         await axios.post("http://event-bus-srv:4005/events", {
           type: "UserLeft",
           data: socket.id,

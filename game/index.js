@@ -33,11 +33,6 @@ app.post("/game", async (req, res) => {
 app.get("/game/:gameCode", async (req, res) => {
   var { gameCode } = req.params;
   var game = await Game.findOne({ gameCode: gameCode });
-  await axios.post("http://event-bus-srv:4005/events", {
-    type: "GameJoined",
-    data: game,
-  });
-
   res.send(game._doc);
 });
 
@@ -45,6 +40,10 @@ app.post("/events", async (req, res) => {
   console.log("Event Received:", req.body.type);
 
   const { type, data } = req.body;
+
+  if (type === "GameEmpty") {
+    await Game.deleteMany({ gameCode: gameCode });
+  }
 
   res.send({});
 });
