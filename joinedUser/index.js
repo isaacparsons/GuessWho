@@ -32,6 +32,15 @@ app.post("/events", async (req, res) => {
       });
     }
   }
+  if (type === "UserPointsChanged") {
+    var user = data;
+    await JoinedUser.updateOne({ _id: user._id }, { points: user.points });
+    var updatedUser = await JoinedUser.findOne({ _id: user._id });
+    await axios.post("http://event-bus-srv:4005/events", {
+      type: "JoinedUserUpdated",
+      data: updatedUser,
+    });
+  }
 
   res.send({});
 });

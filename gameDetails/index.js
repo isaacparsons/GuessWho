@@ -43,6 +43,25 @@ app.post("/events", async (req, res) => {
       });
     }
   }
+  if (type === "JoinedUserUpdated") {
+    var gameDetails = await GameDetail.findOne({ "joinedUsers._id": data._id });
+    var { joinedUsers } = gameDetails;
+    var updatedJoinedUsers = joinedUsers.map((item) => {
+      if (item._id === data._id) {
+        return data;
+      }
+      return item;
+    });
+    gameDetails.joinedUsers = updatedJoinedUsers;
+    console.log(gameDetails);
+    await axios.post("http://event-bus-srv:4005/events", {
+      type: "GameDetailsUpdated",
+      data: gameDetails,
+    });
+
+    await GameDetail.updateOne({ _id: gameDetails._id }, gameDetails);
+    var newGameDetails = await GameDetail.findOne({ _id: gameDetails._id });
+  }
   if (type === "RoundCreated") {
     var round = data;
     var gameDetails = await GameDetail.findOne({ "game.gameCode": data.gameCode });
@@ -78,20 +97,36 @@ app.post("/events", async (req, res) => {
   if (type === "RoundUpdated") {
     var round = data;
     var gameDetails = await GameDetail.findOne({ "game.gameCode": round.gameCode });
-    var newRounds = gameDetails.rounds.map((item) => {
-      if (item._id === round._id) {
-        item = round;
-      }
-      return round;
-    });
-    gameDetails.rounds = newRounds;
+    var { joinedUsers, rounds } = gameDetails;
+
+    var updatedRounds = updateRounds(rounds, round);
+    gameDetails.rounds = updatedRounds;
     await GameDetail.updateOne({ "game.gameCode": round.gameCode }, gameDetails);
+
     var newGameDetails = await GameDetail.findOne({ "game.gameCode": data.gameCode });
     await axios.post("http://event-bus-srv:4005/events", {
       type: "GameDetailsUpdated",
       data: newGameDetails._doc,
     });
-    console.log(newGameDetails);
+
+    var roundCompleted = isRoundComplete(round, joinedUsers);
+    console.log(`Round Complete: ${roundCompleted}`);
+    if (roundCompleted) {
+      var updatedUsers = updateUserPoints(round, joinedUsers);
+      updatedUsers.forEach(async (user) => {
+        await axios.post("http://event-bus-srv:4005/events", {
+          type: "UserPointsChanged",
+          data: user,
+        });
+      });
+
+      await axios.post("http://event-bus-srv:4005/events", {
+        type: "RoundComplete",
+        data: round,
+      });
+    }
+
+    // check if any users have reached the game point limit
   }
   if (type === "UserLeft") {
     var gameDetails = await GameDetail.findOne({ "joinedUsers.socketId": data });
@@ -110,13 +145,53 @@ app.post("/events", async (req, res) => {
       });
     }
   }
-
   if (type === "GameEmpty") {
     var gameCode = data;
     await GameDetail.deleteOne({ "game.gameCode": gameCode });
   }
   res.send({});
 });
+
+const updateRounds = (rounds, newRound) => {
+  return rounds.map((item) => {
+    if (item._id === newRound._id) {
+      return newRound;
+    }
+    return item;
+  });
+};
+
+const isRoundComplete = (round, joinedUsers) => {
+  var userIds = joinedUsers.map((item) => item._id);
+  var answerSubmittedUserIds = round.answers.map((item) => item.userId);
+  if (userIds.length === answerSubmittedUserIds.length) {
+    return true;
+  }
+  return false;
+};
+const updateUserPoints = (round, joinedUsers) => {
+  var usersVotedYes = [];
+  round.answers.forEach((item) => {
+    if (item.userAnswer) {
+      usersVotedYes.push(item.userId);
+    }
+  });
+
+  var updatedJoinedUsers = [];
+  joinedUsers.forEach((user) => {
+    var { _id } = user;
+    var userAnswer = round.answers.find((item) => item.userId === _id);
+    var points = 0;
+    userAnswer.selectedUsers.forEach((item) => {
+      if (usersVotedYes.indexOf(item) >= 0) {
+        points += 10;
+      }
+    });
+    user.points = points;
+    updatedJoinedUsers.push(user);
+  });
+  return updatedJoinedUsers;
+};
 
 const start = async () => {
   try {

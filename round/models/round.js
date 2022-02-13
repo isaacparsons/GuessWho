@@ -22,7 +22,7 @@ const round = new Schema(
       type: String,
       required: false,
     },
-    correct_users: {
+    answers: {
       type: Array,
       required: true,
     },

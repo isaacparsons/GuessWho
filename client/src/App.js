@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import HomeScreen from "./screens/HomeScreen";
 import GameScreen from "./screens/GameScreen";
 import axios from "axios";
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 
 const App = () => {
   const [host, setHost] = useState(false);

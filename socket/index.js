@@ -49,6 +49,14 @@ class Socket {
         });
       });
 
+      socket.on("round-answer-submitted", async (round) => {
+        console.log(round);
+        await axios.post("http://event-bus-srv:4005/events", {
+          type: "RoundAnswerUpdated",
+          data: round,
+        });
+      });
+
       socket.on("disconnect", async (err) => {
         await axios.post("http://event-bus-srv:4005/events", {
           type: "UserLeft",

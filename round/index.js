@@ -20,7 +20,7 @@ app.post("/events", async (req, res) => {
       gameCode: data.gameCode,
       selectedUser: null,
       prompt: " ",
-      correct_users: [],
+      answers: [],
       started: false,
       expired: false,
     }).save();
@@ -49,6 +49,21 @@ app.post("/events", async (req, res) => {
   }
   if (type === "GameEmpty") {
     await Round.deleteMany({ gameCode: gameCode });
+  }
+  if (type === "RoundAnswerUpdated") {
+    var round = data;
+    var _round = await Round.findOne({ _id: round._id });
+    await Round.updateOne({ _id: round._id }, { $set: { answers: [..._round.answers, ...round.answers] } });
+    var newRound = await Round.findOne({ _id: round._id });
+
+    await axios.post("http://event-bus-srv:4005/events", {
+      type: "RoundUpdated",
+      data: newRound,
+    });
+  }
+  if (type === "RoundComplete") {
+    var round = data;
+    var _round = await Round.findOne({ _id: round._id });
   }
 
   res.send({});
