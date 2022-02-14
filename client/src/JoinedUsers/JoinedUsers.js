@@ -21,7 +21,12 @@ const JoinedUsers = ({ joinedUsers }) => {
       <Typography style={{ fontSize: 16 }}>Users: </Typography>
       <Box className={classes.usersContainer} style={{}}>
         {joinedUsers.map((user) => {
-          return <Typography>{`${user.displayName} has joined the room`}</Typography>;
+          return (
+            <Box display="flex" flexDirection={"row"}>
+              <Typography>{`${user.displayName}`}</Typography>
+              <Typography>{`Points: ${user.points}`}</Typography>
+            </Box>
+          );
         })}
       </Box>
     </Box>

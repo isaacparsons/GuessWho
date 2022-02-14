@@ -76,28 +76,17 @@ app.post("/events", async (req, res) => {
       data: newGameDetails._doc,
     });
 
-    var userIds = joinedUsers.map((user) => user._id);
-    var roundUserIds = rounds.map((round) => round.selectedUser);
-    var usersNotSelected = userIds.filter((userId) => {
-      if (!roundUserIds.find((item) => item === userId)) {
-        return userId;
-      }
+    var selectedUser = selectRoundUser(rounds, joinedUsers);
+    round.selectedUser = selectedUser;
+    await axios.post("http://event-bus-srv:4005/events", {
+      type: "RoundUserSelected",
+      data: round,
     });
-
-    var randomSelection = Math.floor(Math.random() * (usersNotSelected.length - 1));
-    if (randomSelection >= 0) {
-      var selectedUser = usersNotSelected[randomSelection];
-      round.selectedUser = selectedUser;
-      await axios.post("http://event-bus-srv:4005/events", {
-        type: "RoundUserSelected",
-        data: round,
-      });
-    }
   }
   if (type === "RoundUpdated") {
     var round = data;
     var gameDetails = await GameDetail.findOne({ "game.gameCode": round.gameCode });
-    var { joinedUsers, rounds } = gameDetails;
+    var { joinedUsers, rounds, game } = gameDetails;
 
     var updatedRounds = updateRounds(rounds, round);
     gameDetails.rounds = updatedRounds;
@@ -110,8 +99,7 @@ app.post("/events", async (req, res) => {
     });
 
     var roundCompleted = isRoundComplete(round, joinedUsers);
-    console.log(`Round Complete: ${roundCompleted}`);
-    if (roundCompleted) {
+    if (roundCompleted && !round.expired) {
       var updatedUsers = updateUserPoints(round, joinedUsers);
       updatedUsers.forEach(async (user) => {
         await axios.post("http://event-bus-srv:4005/events", {
@@ -127,6 +115,15 @@ app.post("/events", async (req, res) => {
     }
 
     // check if any users have reached the game point limit
+    var winners = getGameWinners(game, joinedUsers);
+    game.winners = winners;
+
+    if (winners.length > 0) {
+      await axios.post("http://event-bus-srv:4005/events", {
+        type: "GameComplete",
+        data: game,
+      });
+    }
   }
   if (type === "UserLeft") {
     var gameDetails = await GameDetail.findOne({ "joinedUsers.socketId": data });
@@ -160,7 +157,11 @@ const updateRounds = (rounds, newRound) => {
     return item;
   });
 };
-
+const selectRoundUser = (rounds, joinedUsers) => {
+  var userIds = joinedUsers.map((user) => user._id);
+  var selectedUser = Math.floor(Math.random() * (userIds.length - 1));
+  return userIds[selectedUser];
+};
 const isRoundComplete = (round, joinedUsers) => {
   var userIds = joinedUsers.map((item) => item._id);
   var answerSubmittedUserIds = round.answers.map((item) => item.userId);
@@ -191,6 +192,16 @@ const updateUserPoints = (round, joinedUsers) => {
     updatedJoinedUsers.push(user);
   });
   return updatedJoinedUsers;
+};
+const getGameWinners = (game, joinedUsers) => {
+  var winners = [];
+  var pointsMax = game.pointsMax;
+  joinedUsers.forEach((user) => {
+    if (user.points >= pointsMax) {
+      winners.push(user._id);
+    }
+  });
+  return winners;
 };
 
 const start = async () => {

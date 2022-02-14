@@ -45,6 +45,12 @@ app.post("/events", async (req, res) => {
     await Game.deleteMany({ gameCode: gameCode });
   }
 
+  if (type === "GameComplete") {
+    var game = data;
+    console.log(game);
+    // await Game.deleteMany({ gameCode: gameCode });
+  }
+
   res.send({});
 });
 

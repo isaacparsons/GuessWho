@@ -64,6 +64,27 @@ app.post("/events", async (req, res) => {
   if (type === "RoundComplete") {
     var round = data;
     var _round = await Round.findOne({ _id: round._id });
+    await Round.updateOne({ _id: round._id }, { $set: { expired: true } });
+    var newRound = await Round.findOne({ _id: round._id });
+
+    await axios.post("http://event-bus-srv:4005/events", {
+      type: "RoundUpdated",
+      data: newRound,
+    });
+
+    var round = await new Round({
+      roundNumber: parseInt(round.roundNumber) + 1,
+      gameCode: data.gameCode,
+      selectedUser: null,
+      prompt: " ",
+      answers: [],
+      started: true,
+      expired: false,
+    }).save();
+    await axios.post("http://event-bus-srv:4005/events", {
+      type: "RoundCreated",
+      data: round._doc,
+    });
   }
 
   res.send({});

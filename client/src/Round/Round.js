@@ -1,28 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
-import { makeStyles } from "@mui/styles";
 import CreateRoundModal from "./CreateRoundModal";
 import AnswerRoundModal from "./AnswerRoundModal";
 
-const useStyles = makeStyles({
-  modalContainer: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  container: {
-    width: 400,
-    height: 400,
-    display: "flex",
-    flexDirection: "column",
-    backgroundColor: "white",
-    borderRadius: 10,
-    padding: 10,
-  },
-});
-
 const Round = ({ round, joinedUsers, user, onCreateRound, onSubmitRoundAnswer }) => {
-  const classes = useStyles();
   const [createRoundModal, setCreateRoundModal] = useState(false);
   const [roundSelectionModal, setRoundSelectionModal] = useState(false);
   const [prompt, setPrompt] = useState("");
