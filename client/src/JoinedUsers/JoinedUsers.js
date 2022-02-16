@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Box, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
+import AccountCircle from "@mui/icons-material/AccountCircle";
 
 const useStyles = makeStyles({
   root: {
@@ -12,6 +13,11 @@ const useStyles = makeStyles({
     flexDirection: "column",
     padding: 10,
   },
+  userRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+  },
 });
 
 const JoinedUsers = ({ joinedUsers, maxPoints }) => {
@@ -22,7 +28,8 @@ const JoinedUsers = ({ joinedUsers, maxPoints }) => {
       <Box className={classes.usersContainer}>
         {joinedUsers.map((user) => {
           return (
-            <Box display="flex" flexDirection={"row"}>
+            <Box className={classes.userRow}>
+              <AccountCircle />
               <Typography fontSize={22} padding={1}>{`${user.displayName} `}</Typography>
               <Points points={user.points} maxPoints={maxPoints} />
             </Box>

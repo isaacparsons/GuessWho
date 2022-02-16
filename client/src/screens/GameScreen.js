@@ -100,7 +100,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   };
 
   const onGameEnded = () => {
-    socket.emit("game-ended", "game-ended");
+    socket.emit("game-ended", game.gameCode);
     onExitGame();
   };
 

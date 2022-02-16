@@ -68,9 +68,10 @@ class Game {
     this.createRound();
   }
   createRound() {
+    var roundNumber = this.rounds.length + 1;
     this.rounds.push({
       gameCode: this.gameCode,
-      roundNumber: 1,
+      roundNumber: roundNumber,
       selectedUser: null,
       started: false,
       expired: false,
