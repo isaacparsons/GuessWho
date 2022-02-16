@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import CreateRoundModal from "./CreateRoundModal";
 import AnswerRoundModal from "./AnswerRoundModal";
 
-const Round = ({ round, joinedUsers, user, onCreateRound, onSubmitRoundAnswer }) => {
+const Round = ({ round, joinedUsers, user, onEditRound, onSubmitRoundAnswer }) => {
   const [createRoundModal, setCreateRoundModal] = useState(false);
   const [roundSelectionModal, setRoundSelectionModal] = useState(false);
   const [prompt, setPrompt] = useState("");
@@ -12,7 +12,8 @@ const Round = ({ round, joinedUsers, user, onCreateRound, onSubmitRoundAnswer })
 
   useEffect(() => {
     if (round) {
-      if (round.started && !round.expired) {
+      var userAnswer = round.answers.find((item) => item.userId === user.displayName);
+      if (round.started && !round.expire && !userAnswer) {
         setRoundSelectionModal(true);
       } else {
         setRoundSelectionModal(false);
@@ -22,7 +23,7 @@ const Round = ({ round, joinedUsers, user, onCreateRound, onSubmitRoundAnswer })
 
   useEffect(() => {
     if (round) {
-      if (round.selectedUser === user._id && !round.started) {
+      if (round.selectedUser === user.displayName && !round.started) {
         setCreateRoundModal(true);
       } else {
         setCreateRoundModal(false);
@@ -30,18 +31,20 @@ const Round = ({ round, joinedUsers, user, onCreateRound, onSubmitRoundAnswer })
     }
   }, [round, user]);
 
-  const handleSubmitRound = () => {
+  const handleCreateRound = () => {
     round.prompt = prompt;
-    onCreateRound(round);
+    onEditRound(round);
     setCreateRoundModal(false);
   };
 
   const handleSubmitRoundAnswer = () => {
     round.answers.push({
-      userId: user._id,
+      userId: user.displayName,
       userAnswer: userAnswer === "yes" ? true : false,
       selectedUsers: selectedUsersAnswer,
     });
+    setUserAnswer(false);
+    setSelectedUsersAnswer([]);
     onSubmitRoundAnswer(round);
     setRoundSelectionModal(false);
   };
@@ -67,13 +70,14 @@ const Round = ({ round, joinedUsers, user, onCreateRound, onSubmitRoundAnswer })
           roundNumber={roundNumber}
           prompt={prompt}
           setPrompt={setPrompt}
-          handleSubmitRound={handleSubmitRound}
+          handleSubmitRound={handleCreateRound}
         />
         <AnswerRoundModal
+          user={user}
+          round={round}
           userAnswer={userAnswer}
           setUserAnswer={setUserAnswer}
           roundSelectionModal={roundSelectionModal}
-          roundNumber={roundNumber}
           joinedUsers={joinedUsers}
           selectedUsersAnswer={selectedUsersAnswer}
           selectUserClick={selectUserClick}

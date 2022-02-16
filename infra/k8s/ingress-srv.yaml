@@ -34,17 +34,3 @@ spec:
                 name: socket-srv
                 port:
                   number: 4006
-          - path: /game
-            pathType: Prefix
-            backend:
-              service:
-                name: game-srv
-                port:
-                  number: 4007
-          - path: /gameDetails
-            pathType: Prefix
-            backend:
-              service:
-                name: game-details-srv
-                port:
-                  number: 4009

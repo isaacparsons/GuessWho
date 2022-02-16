@@ -31,7 +31,8 @@ const useStyles = makeStyles({
 });
 
 const AnswerRoundModal = ({
-  roundNumber,
+  user,
+  round,
   joinedUsers,
   selectedUsersAnswer,
   selectUserClick,
@@ -50,7 +51,8 @@ const AnswerRoundModal = ({
       className={classes.modalContainer}
     >
       <Box className={classes.container}>
-        <Typography style={{ padding: 5, fontSize: 20 }}>{`Round ${roundNumber}`}</Typography>
+        <Typography style={{ padding: 5, fontSize: 20 }}>{`Round ${round.roundNumber}`}</Typography>
+        <Typography style={{ padding: 5, fontSize: 20 }}>{`${round.prompt}`}</Typography>
         <FormControl value={userAnswer} onChange={(e) => setUserAnswer(e.target.value)}>
           <FormLabel id="user-answer-buttons-group-label">Have you?</FormLabel>
           <RadioGroup aria-labelledby="user-answer-buttons-group-label" defaultValue="no" name="radio-buttons-group">
@@ -59,17 +61,19 @@ const AnswerRoundModal = ({
           </RadioGroup>
         </FormControl>
         <Box display="flex" flexDirection="column">
-          {joinedUsers.map((user) => (
-            <Box display="flex" flexDirection="row">
-              <Typography style={{ padding: 5, fontSize: 16 }}>{`${user.displayName}`}</Typography>
-              <Checkbox
-                value={user._id}
-                checked={selectedUsersAnswer.indexOf(user._id) >= 0}
-                onChange={selectUserClick}
-                inputProps={{ "aria-label": "controlled" }}
-              />
-            </Box>
-          ))}
+          {joinedUsers
+            .filter((item) => item.displayName !== user.displayName)
+            .map((user) => (
+              <Box display="flex" flexDirection="row">
+                <Typography style={{ padding: 5, fontSize: 16 }}>{`${user.displayName}`}</Typography>
+                <Checkbox
+                  value={user.displayName}
+                  checked={selectedUsersAnswer.indexOf(user.displayName) >= 0}
+                  onChange={selectUserClick}
+                  inputProps={{ "aria-label": "controlled" }}
+                />
+              </Box>
+            ))}
         </Box>
         <Button onClick={handleSubmitRoundAnswer}>Submit</Button>
       </Box>

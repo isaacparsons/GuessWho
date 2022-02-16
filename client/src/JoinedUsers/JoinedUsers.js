@@ -14,21 +14,31 @@ const useStyles = makeStyles({
   },
 });
 
-const JoinedUsers = ({ joinedUsers }) => {
+const JoinedUsers = ({ joinedUsers, maxPoints }) => {
   const classes = useStyles();
   return (
     <Box className={classes.root}>
       <Typography style={{ fontSize: 16 }}>Users: </Typography>
-      <Box className={classes.usersContainer} style={{}}>
+      <Box className={classes.usersContainer}>
         {joinedUsers.map((user) => {
           return (
             <Box display="flex" flexDirection={"row"}>
-              <Typography>{`${user.displayName}`}</Typography>
-              <Typography>{`Points: ${user.points}`}</Typography>
+              <Typography fontSize={22} padding={1}>{`${user.displayName} `}</Typography>
+              <Points points={user.points} maxPoints={maxPoints} />
             </Box>
           );
         })}
       </Box>
+    </Box>
+  );
+};
+
+const Points = ({ maxPoints, points }) => {
+  var pointsRatio = `${(points / maxPoints) * 100}%`;
+  return (
+    <Box display="flex" flexDirection="row" width="100%" alignItems={"center"}>
+      <Typography width={100}>{`Points: ${points}`}</Typography>
+      <Box style={{ backgroundColor: "#58a36c", height: 10, width: pointsRatio, borderRadius: 5 }}></Box>
     </Box>
   );
 };
