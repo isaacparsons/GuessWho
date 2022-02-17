@@ -5,6 +5,8 @@ import { Box, Button, Modal, Typography } from "@mui/material";
 import Round from "../Round/Round";
 import GameFinishedModal from "../GameFinishedModal/GameFinishedModal";
 
+var HOST = window.location.hostname;
+
 const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   const [game, setGame] = useState(null);
   const [socket, setSocket] = useState(null);
@@ -15,7 +17,8 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   const [gameFinishedModal, setGameFinishedModal] = useState(false);
 
   useEffect(() => {
-    const newSocket = socketIOClient("http://127.0.0.1:4006", {
+    // "http://127.0.0.1:4006"
+    const newSocket = socketIOClient(HOST, {
       reconnection: true,
       transports: ["websocket"],
       upgrade: false,
