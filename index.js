@@ -321,4 +321,4 @@ app.get("/", async (req, res) => {
   res.sendFile(path.join(__dirname, "./client/build/index.html"));
 });
 
-http.listen(4006, () => console.log("listening on 4006"));
+http.listen(process.env.PORT || 4006, () => console.log("listening on 4006"));
