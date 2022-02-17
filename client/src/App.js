@@ -20,7 +20,7 @@ const App = () => {
   };
 
   const onExitGame = () => {
-    setScreen("game");
+    setScreen("home");
   };
 
   const getScreen = (screen) => {

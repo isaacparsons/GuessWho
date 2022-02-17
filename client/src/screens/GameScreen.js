@@ -17,7 +17,8 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   const [gameFinishedModal, setGameFinishedModal] = useState(false);
 
   useEffect(() => {
-    // "http://127.0.0.1:4006"
+    // dev: "http://127.0.0.1:4006"
+    //prod: HOST
     const newSocket = socketIOClient(HOST, {
       reconnection: true,
       transports: ["websocket"],
@@ -104,6 +105,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
 
   const onGameEnded = () => {
     socket.emit("game-ended", game.gameCode);
+    setGameFinishedModal(false);
     onExitGame();
   };
 
@@ -112,7 +114,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
       <Box style={{ padding: 10 }}>
         <Typography style={{ fontSize: 22 }}>{`Room Code: ${game.gameCode}`}</Typography>
         <JoinedUsers joinedUsers={joinedUsers} maxPoints={game.maxPoints} />
-        {host ? (
+        {host && !game.gameStarted ? (
           <Button style={{ borderRadius: 10, backgroundColor: "#58a36c", color: "white" }} onClick={startGame}>
             start game
           </Button>
