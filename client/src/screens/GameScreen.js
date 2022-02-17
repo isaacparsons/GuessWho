@@ -15,7 +15,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   const [gameFinishedModal, setGameFinishedModal] = useState(false);
 
   useEffect(() => {
-    const newSocket = socketIOClient("http://posts.com/", {
+    const newSocket = socketIOClient("http://127.0.0.1:4006", {
       reconnection: true,
       transports: ["websocket"],
       upgrade: false,
