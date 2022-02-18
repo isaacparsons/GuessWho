@@ -20,7 +20,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   useEffect(() => {
     // dev: "http://127.0.0.1:4006"
     //prod: HOST
-    const newSocket = socketIOClient("http://127.0.0.1:4006", {
+    const newSocket = socketIOClient(HOST, {
       reconnection: true,
       transports: ["websocket"],
       upgrade: false,
