@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import HomeScreen from "./screens/HomeScreen";
 import GameScreen from "./screens/GameScreen";
 import { Box } from "@mui/material";
@@ -10,7 +10,6 @@ const App = () => {
   const [host, setHost] = useState(false);
 
   const handleJoinPress = async () => {
-    console.log("game");
     setScreen("game");
   };
 

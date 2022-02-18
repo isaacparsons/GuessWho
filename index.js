@@ -1,4 +1,3 @@
-const axios = require("axios");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const path = require("path");
@@ -236,12 +235,16 @@ class GameManager {
 
       socket.on("join-game", async (user) => {
         // check if game has started. If not dont join
+        socket.join(user.gameCode);
         var game = this.getGame(user.gameCode);
-        if (!game.getGameStarted()) {
-          game.addUser(user.gameCode, user.displayName, user.host, socket.id);
-          socket.join(user.gameCode);
-          this.updateGame(game);
-          io.sockets.to(user.gameCode).emit("user-joined", game.getGame());
+        if (game) {
+          if (!game.getGameStarted()) {
+            game.addUser(user.gameCode, user.displayName, user.host, socket.id);
+            this.updateGame(game);
+            io.sockets.to(user.gameCode).emit("user-joined", game.getGame());
+          }
+        } else {
+          io.sockets.to(user.gameCode).emit("error", "Game does not exist");
         }
       });
 
@@ -273,16 +276,6 @@ class GameManager {
         io.sockets.to(round.gameCode).emit("round-editted", game.getGame());
       });
 
-      socket.on("game-ended", async (gameCode) => {
-        var newGames = this.games.filter((game) => {
-          if (!game.getGameCode() === gameCode) {
-            return game;
-          }
-        });
-        this.games = newGames;
-        io.sockets.to(round.gameCode).emit("game-ended", "game-ended");
-      });
-
       socket.on("disconnect", async (err) => {
         var gameCode = null;
         this.games.forEach((game) => {
@@ -293,6 +286,10 @@ class GameManager {
         game.userDisconnected(socket.id);
         this.updateGame(game);
         io.sockets.to(gameCode).emit("user-left", game.getGame());
+
+        if (game.joinedUsers.length === 0) {
+          this.removeGame(gameCode);
+        }
       });
     });
   }
@@ -302,6 +299,14 @@ class GameManager {
         return game;
       }
     });
+  }
+  removeGame(gameCode) {
+    var newGames = this.games.filter((game) => {
+      if (!game.getGameCode() === gameCode) {
+        return game;
+      }
+    });
+    this.games = newGames;
   }
   updateGame(newGame) {
     var updatedGames = this.games.map((game) => {

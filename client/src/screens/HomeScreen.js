@@ -45,11 +45,21 @@ const HomeScreen = ({ gameCode, setGameCode, onCreateGameClick, onJoinGameClick,
           onChange={(e) => setDisplayName(e.target.value)}
         />
       </Box>
-      <Button className={classes.button} onClick={onCreateGameClick}>
+      <Button
+        style={{ opacity: displayName.length === 0 ? 0.5 : 1 }}
+        disabled={displayName.length === 0}
+        className={classes.button}
+        onClick={onCreateGameClick}
+      >
         Create Game
       </Button>
       <Box className={classes.joinGameContainer}>
-        <Button className={classes.button} onClick={onJoinGameClick}>
+        <Button
+          style={{ opacity: gameCode.length === 0 ? 0.5 : 1 }}
+          disabled={gameCode.length === 0}
+          className={classes.button}
+          onClick={onJoinGameClick}
+        >
           Join Game
         </Button>
         <Box className={classes.gameCodeContainer}>

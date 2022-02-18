@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import socketIOClient from "socket.io-client";
 import JoinedUsers from "../JoinedUsers/JoinedUsers";
-import { Box, Button, Modal, Typography } from "@mui/material";
+import { Box, Button, Typography } from "@mui/material";
 import Round from "../Round/Round";
 import GameFinishedModal from "../GameFinishedModal/GameFinishedModal";
 
 var HOST = window.location.hostname;
 
 const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
+  const [error, setError] = useState("");
   const [game, setGame] = useState(null);
   const [socket, setSocket] = useState(null);
   const [joinedUsers, setJoinedUsers] = useState([]);
@@ -19,7 +20,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   useEffect(() => {
     // dev: "http://127.0.0.1:4006"
     //prod: HOST
-    const newSocket = socketIOClient(HOST, {
+    const newSocket = socketIOClient("http://127.0.0.1:4006", {
       reconnection: true,
       transports: ["websocket"],
       upgrade: false,
@@ -41,6 +42,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
 
   useEffect(() => {
     if (game) {
+      setError("");
       setJoinedUsers(game.joinedUsers);
       setRounds(game.rounds);
     }
@@ -57,6 +59,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
     }
   }, [rounds]);
 
+  console.log(error);
   useEffect(() => {
     if (socket) {
       socket.on("user-joined", (game) => {
@@ -76,6 +79,9 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
       });
       socket.on("user-left", (game) => {
         setGame(game);
+      });
+      socket.on("error", (msg) => {
+        setError(msg);
       });
     }
   }, [socket]);
@@ -104,34 +110,41 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   };
 
   const onGameEnded = () => {
-    socket.emit("game-ended", game.gameCode);
     setGameFinishedModal(false);
     onExitGame();
   };
 
-  if (game) {
+  if (error.length > 0) {
     return (
       <Box style={{ padding: 10 }}>
-        <Typography style={{ fontSize: 22 }}>{`Room Code: ${game.gameCode}`}</Typography>
-        <JoinedUsers joinedUsers={joinedUsers} maxPoints={game.maxPoints} />
-        {host && !game.gameStarted ? (
-          <Button style={{ borderRadius: 10, backgroundColor: "#58a36c", color: "white" }} onClick={startGame}>
-            start game
-          </Button>
-        ) : null}
-        {!game.gameFinished ? (
-          <Round
-            joinedUsers={joinedUsers}
-            round={currentRound}
-            user={user}
-            onEditRound={onEditRound}
-            onSubmitRoundAnswer={onSubmitRoundAnswer}
-          />
-        ) : null}
-        <GameFinishedModal winners={game.winners} gameFinished={gameFinishedModal} onExit={onGameEnded} />
+        <Typography style={{ fontSize: 22 }}>{`Error: ${error}`}</Typography>
       </Box>
     );
-  } else return null;
+  } else {
+    if (game) {
+      return (
+        <Box style={{ padding: 10 }}>
+          <Typography style={{ fontSize: 22 }}>{`Room Code: ${game.gameCode}`}</Typography>
+          <JoinedUsers joinedUsers={joinedUsers} maxPoints={game.maxPoints} />
+          {host && !game.gameStarted ? (
+            <Button style={{ borderRadius: 10, backgroundColor: "#58a36c", color: "white" }} onClick={startGame}>
+              start game
+            </Button>
+          ) : null}
+          {!game.gameFinished ? (
+            <Round
+              joinedUsers={joinedUsers}
+              round={currentRound}
+              user={user}
+              onEditRound={onEditRound}
+              onSubmitRoundAnswer={onSubmitRoundAnswer}
+            />
+          ) : null}
+          <GameFinishedModal winners={game.winners} gameFinished={gameFinishedModal} onExit={onGameEnded} />
+        </Box>
+      );
+    } else return null;
+  }
 };
 
 export default GameScreen;
