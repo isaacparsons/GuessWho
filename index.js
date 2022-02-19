@@ -37,7 +37,7 @@ class Game {
     this.gameCode = null;
     this.gameStarted = false;
     this.winners = [];
-    this.maxPoints = 20;
+    this.maxPoints = 50;
     this.rounds = [];
     this.joinedUsers = [];
     this.gameFinished = false;
@@ -132,33 +132,28 @@ class Game {
     }
   }
   updateUsersPoints(round) {
-    var correctUsers = [];
+    var answers = {};
     round.answers.forEach((item) => {
-      if (item.userAnswer) {
-        correctUsers.push(item.userId);
-      }
+      answers[item.userId] = item.userAnswer;
     });
+
     var newJoinedUsers = this.joinedUsers.map((user) => {
-      round.answers.forEach((answer) => {
-        if (answer.userId === user.displayName) {
-          var points = user.points;
-          console.log(answer.selectedUsers);
-          answer.selectedUsers.forEach((item) => {
-            if (correctUsers.indexOf(item) >= 0) {
-              points += 10;
-            } else {
-              points -= 10;
-            }
-          });
-          if (points > 0) {
-            user.points = points;
-          } else {
-            user.points = 0;
-          }
+      var joinedUsers = this.joinedUsers.filter((item) => item.displayName !== user.displayName);
+      var userAnswers = round.answers.find((item) => item.userId === user.displayName);
+
+      joinedUsers.forEach((joinedUser) => {
+        var points = user.points;
+        if (answers[joinedUser.displayName] && userAnswers.selectedUsers.indexOf(joinedUser.displayName) >= 0) {
+          points += 10;
         }
+        if (!answers[joinedUser.displayName] && userAnswers.selectedUsers.indexOf(joinedUser.displayName) < 0) {
+          points += 10;
+        }
+        user.points = points;
       });
       return user;
     });
+
     this.joinedUsers = newJoinedUsers;
   }
   isRoundComplete(round) {

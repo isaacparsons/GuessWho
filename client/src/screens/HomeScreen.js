@@ -55,8 +55,8 @@ const HomeScreen = ({ gameCode, setGameCode, onCreateGameClick, onJoinGameClick,
       </Button>
       <Box className={classes.joinGameContainer}>
         <Button
-          style={{ opacity: gameCode.length === 0 ? 0.5 : 1 }}
-          disabled={gameCode.length === 0}
+          style={{ opacity: gameCode.length === 0 || displayName.length === 0 ? 0.5 : 1 }}
+          disabled={gameCode.length === 0 || displayName.length === 0}
           className={classes.button}
           onClick={onJoinGameClick}
         >

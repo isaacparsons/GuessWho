@@ -20,7 +20,7 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
   useEffect(() => {
     // dev: "http://127.0.0.1:4006"
     //prod: HOST
-    const newSocket = socketIOClient(HOST, {
+    const newSocket = socketIOClient("http://127.0.0.1:4006", {
       reconnection: true,
       transports: ["websocket"],
       upgrade: false,
@@ -59,7 +59,6 @@ const GameScreen = ({ gameCode, host, displayName, onExitGame }) => {
     }
   }, [rounds]);
 
-  console.log(error);
   useEffect(() => {
     if (socket) {
       socket.on("user-joined", (game) => {
